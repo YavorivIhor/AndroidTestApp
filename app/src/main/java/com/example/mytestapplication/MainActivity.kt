@@ -25,12 +25,12 @@ class MainActivity : AppCompatActivity() ,UpdateAndDelete {
         listViewItem = findViewById<ListView>(R.id.item_listView)
         database = FirebaseDatabase.getInstance().reference
 
-        fab.setOnClickListener { view ->
+        fab.setOnClickListener { h ->
             val alertDialog = AlertDialog.Builder(this)
             val textEditText = EditText(this)
             alertDialog.setTitle("Нове завдання")
             alertDialog.setView(textEditText)
-            alertDialog.setPositiveButton("Додати"){dialog, i->
+            alertDialog.setPositiveButton("Додати"){dialog, j->
                 val taskItemData = TaskModel.createList()
                 taskItemData.title = textEditText.text.toString()
                 taskItemData.status = false
