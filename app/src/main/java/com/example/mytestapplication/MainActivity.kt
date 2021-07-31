@@ -12,8 +12,8 @@ import com.google.firebase.database.*
 
 class MainActivity : AppCompatActivity() ,UpdateAndDelete {
     lateinit var database:DatabaseReference
-    var toDoList:MutableList<ToDoModel>? = null
-    lateinit var adapter: ToDoAdapter
+    var taskList:MutableList<TaskModel>? = null
+    lateinit var adapter: TaskAdapter
     private var listViewItem: ListView?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,31 +31,26 @@ class MainActivity : AppCompatActivity() ,UpdateAndDelete {
             alertDialog.setTitle("Нове завдання")
             alertDialog.setView(textEditText)
             alertDialog.setPositiveButton("Додати"){dialog, i->
-                val todoItemData = ToDoModel.createList()
-                todoItemData.title = textEditText.text.toString()
-                todoItemData.status = false
+                val taskItemData = TaskModel.createList()
+                taskItemData.title = textEditText.text.toString()
+                taskItemData.status = false
 
                 val newItemData = database.child("Task").push()
-                todoItemData.ID = newItemData.key
-
-                newItemData.setValue(todoItemData)
-
+                taskItemData.ID = newItemData.key
+                newItemData.setValue(taskItemData)
                 dialog.dismiss()
                 Toast.makeText(this, "Завдання збережено", Toast.LENGTH_LONG).show()
-
             }
             alertDialog.show()
         }
-
-        toDoList = mutableListOf<ToDoModel>()
-        adapter = ToDoAdapter(this, toDoList!!)
+        taskList = mutableListOf<TaskModel>()
+        adapter = TaskAdapter(this, taskList!!)
         listViewItem!!.adapter=adapter
         database.addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
-              toDoList!!.clear()
+              taskList!!.clear()
                 addItemToList(snapshot)
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }
@@ -63,16 +58,16 @@ class MainActivity : AppCompatActivity() ,UpdateAndDelete {
     private fun addItemToList(snapshot: DataSnapshot) {
         val items = snapshot.children.iterator()
         if (items.hasNext()) {
-            val toDoIndexedValue = items.next()
-            val itemsIterator = toDoIndexedValue.children.iterator()
+            val taskIndexedValue = items.next()
+            val itemsIterator = taskIndexedValue.children.iterator()
             while (itemsIterator.hasNext()) {
                 val currentItem = itemsIterator.next()
-                val toDoItemData = ToDoModel.createList()
+                val taskItemData = TaskModel.createList()
                 val map = currentItem.getValue() as HashMap<String, Any>
-                toDoItemData.ID = currentItem.key
-                toDoItemData.status = map.get("status") as Boolean?
-                toDoItemData.title= map.get("title") as String?
-                toDoList!!.add(toDoItemData)
+                taskItemData.ID = currentItem.key
+                taskItemData.status = map.get("status") as Boolean?
+                taskItemData.title= map.get("title") as String?
+                taskList!!.add(taskItemData)
             }
         }
         adapter.notifyDataSetChanged()
@@ -81,7 +76,6 @@ class MainActivity : AppCompatActivity() ,UpdateAndDelete {
     override fun modifyItem(itemID: String, isDone: Boolean) {
         val itemReference = database.child("Task").child(itemID)
         itemReference.child("status").setValue(isDone)
-
     }
 
     override fun onItemDelete(itemID: String) {
